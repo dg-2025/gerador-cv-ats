@@ -1,66 +1,102 @@
-import Image from "next/image";
-import styles from "./page.module.css";
+"use client"
+import { useState, useEffect } from 'react';
+import { Sparkles } from 'lucide-react';
+
+
+import InputsCV from '../componentes/UI/InputsCV';
+import ListaTemplates from '../componentes/UI/ListaTemplates';
+import AcoesGerador from '../componentes/UI/AcoesGerador';
+import CvPreview from '../componentes/UI/CvPreview';
+import BackgroundWrapper from '../componentes/Background/BackgroundWrapper';
 
 export default function Home() {
+  const [baseCv, setBaseCv] = useState('');
+  const [jobDescription, setJobDescription] = useState('');
+  const [cvOriginal, setCvOriginal] = useState(null);
+  const [cvEditado, setCvEditado] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [templateAtivo, setTemplateAtivo] = useState('padrao');
+
+  useEffect(() => {
+    if (cvOriginal) setCvEditado(cvOriginal);
+  }, [cvOriginal]);
+
+  const handleGerarCurriculo = async () => {
+    setLoading(true);
+    setCvOriginal(null);
+    try {
+      const res = await fetch('/api/gerar', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ baseCv, jobDescription }),
+      });
+      const data = await res.json();
+      
+      if (data.curriculo) {
+        setCvOriginal(data.curriculo);
+      } else {
+        alert("Erro: Verifique os dados inseridos.");
+      }
+    } catch (e) {
+      alert("Erro de conexão com a IA.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
-    <div className={styles.page}>
-      <main className={styles.main}>
-        <Image
-          className={styles.logo}
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
+    <main className="gerador-wrapper min-h-screen bg-background">
+      
+      {}
+      <BackgroundWrapper />
+      <video 
+          autoPlay 
+          muted 
+          loop 
+          playsInline 
+          className="video-fundo-port"
+      >
+          <source src="/videos/blackhole.webm" type="video/webm" />
+      </video>
+
+      {}
+      <div className="container-gerador painel-vidro esconder-print">
+        
+        <header className="gerador-header">
+          <div className="badge-pro">
+            <Sparkles size={16} /> ALGO-READY ATS
+          </div>
+          <h1>ATS  <span className="text-destaque">PENETRATION</span></h1>
+          <p>Faça seu currículo de acordo com a vaga que você deseja.</p>
+        </header>
+
+        <InputsCV 
+          baseCv={baseCv} 
+          setBaseCv={setBaseCv}
+          jobDescription={jobDescription} 
+          setJobDescription={setJobDescription}
         />
-        <div className={styles.intro}>
-          <h1>To get started, edit the page.js file.</h1>
-          <p>
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className={styles.ctas}>
-          <a
-            className={styles.primary}
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className={styles.logo}
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className={styles.secondary}
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
-      </main>
-    </div>
+
+        <AcoesGerador 
+          onGerar={handleGerarCurriculo} 
+          loading={loading} 
+          disabled={!baseCv || !jobDescription} 
+          hasCv={!!cvOriginal} 
+          cvParaExportar={cvEditado}
+          template={templateAtivo}
+        />
+
+        <ListaTemplates 
+          templateAtivo={templateAtivo} 
+          onSelectTemplate={setTemplateAtivo} 
+        />
+      </div>
+
+      <CvPreview 
+        cv={cvEditado} 
+        onCvChange={setCvEditado} 
+        template={templateAtivo} 
+      />
+    </main>
   );
 }

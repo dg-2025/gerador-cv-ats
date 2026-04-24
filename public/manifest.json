@@ -1,0 +1,22 @@
+{
+  "name": "Gerador CV ATS",
+  "short_name": "CV ATS",
+  "description": "Gerador de currículos focados em algoritmos ATS.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#000000",
+  "theme_color": "#ff1e00",
+  "icons": [
+    {
+      "src": "/imagens/lOGO.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/imagens/lOGO.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ]
+}

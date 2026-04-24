@@ -1,0 +1,148 @@
+.folha-preview {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  margin: 0 auto;
+  border-radius: 0px;
+  overflow: hidden;
+  box-shadow: 15px 15px 0px rgba(255, 30, 0, 1);
+  border: 4px solid #fff;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  position: relative;
+  z-index: 2;
+  background: #000;
+  padding: 20px 0;
+}
+
+.cv-documento {
+  background: rgba(255, 255, 255, 1);
+  width: 210mm;
+  min-height: 297mm;
+  margin: 0 auto;
+  padding: 40px;
+  border-radius: 0px;
+  color: #1e293b;
+  box-shadow: none;
+  box-sizing: border-box;
+}
+
+.cv-item, .cv-secao { page-break-inside: avoid; break-inside: avoid; }
+h3, h1 { page-break-after: avoid; break-after: avoid; }
+
+.cv-documento ul { padding-left: 1.25rem; margin: 0.5rem 0 1rem 0; }
+.cv-documento li { margin-bottom: 0.4rem; line-height: 1.5; }
+.cv-item { margin-bottom: 1.25rem; break-inside: avoid; page-break-inside: avoid; }
+.cv-secao { break-inside: avoid; page-break-inside: avoid; margin-bottom: 1.75rem; }
+.cv-item-header { display: flex; justify-content: space-between; margin-bottom: 0.25rem; flex-wrap: wrap; }
+.cv-documento a { text-decoration: underline; color: #0f172a; pointer-events: auto; }
+
+
+.template-padrao .cv-documento { font-family: "Times New Roman", Times, serif; }
+.template-padrao .cv-header { text-align: center; border-bottom: 2px solid #0f172a; padding-bottom: 12px; margin-bottom: 20px; }
+.template-padrao .cv-header h1 { font-size: 1.8rem; text-transform: uppercase; margin: 0 0 6px 0; letter-spacing: 1px; }
+.template-padrao .cv-contatos { font-size: 0.85rem; }
+.template-padrao .cv-secao h3 { text-transform: uppercase; font-size: 0.9rem; border-bottom: 1px solid #0f172a; padding-bottom: 4px; margin: 0 0 12px 0; font-weight: bold; }
+.template-padrao .cv-texto, .template-padrao li { font-size: 0.85rem; text-align: justify; }
+.template-padrao .cv-cargo { font-size: 0.85rem; font-style: italic; margin-bottom: 6px; }
+
+.template-moderno .cv-documento { font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; color: #1e293b; }
+.template-moderno .cv-header { text-align: left; margin-bottom: 30px; border-left: 4px solid #0284c7; padding-left: 18px; }
+.template-moderno .cv-header h1 { font-size: 2rem; margin: 0 0 8px 0; color: #0f172a; font-weight: 800; letter-spacing: -0.5px; }
+.template-moderno .cv-contatos { font-size: 0.85rem; color: #475569; }
+.template-moderno .cv-secao h3 { font-size: 1rem; color: #0284c7; margin: 0 0 14px 0; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; border-bottom: 2px solid #f1f5f9; padding-bottom: 6px; }
+.template-moderno .cv-texto, .template-moderno li { font-size: 0.85rem; line-height: 1.6; color: #334155; }
+.template-moderno .cv-cargo { font-size: 0.85rem; margin-bottom: 6px; font-weight: 600; color: #0284c7; }
+
+.template-colunas .cv-documento { font-family: 'Segoe UI', system-ui, sans-serif; }
+.template-colunas .cv-header { text-align: center; background: #f8fafc; padding: 24px; border-radius: 16px; margin-bottom: 28px; border: 1px solid #e2e8f0; }
+.template-colunas .cv-header h1 { font-size: 1.8rem; margin: 0 0 10px 0; font-weight: 700; }
+.template-colunas .cv-body { display: grid; grid-template-columns: 2fr 1fr; gap: 32px; }
+.template-colunas .cv-secao h3 { font-size: 1rem; color: #0f172a; border-bottom: 2px solid #cbd5e1; padding-bottom: 6px; margin-bottom: 16px; font-weight: 700; }
+.template-colunas .cv-texto, .template-colunas li { font-size: 0.85rem; line-height: 1.5; }
+
+.template-executivo .cv-documento { font-family: "Georgia", serif; }
+.template-executivo .cv-header { text-align: center; border-top: 3px solid #111827; border-bottom: 3px solid #111827; padding: 24px 0; margin-bottom: 32px; }
+.template-executivo .cv-header h1 { font-size: 1.9rem; text-transform: uppercase; letter-spacing: 2px; font-weight: bold; }
+.template-executivo .cv-secao h3 { font-size: 1rem; text-transform: uppercase; letter-spacing: 1px; border-bottom: 1px solid #d1d5db; padding-bottom: 6px; margin-bottom: 18px; text-align: center; font-weight: bold; }
+.template-executivo .cv-texto, .template-executivo li { font-size: 0.85rem; line-height: 1.6; text-align: justify; }
+
+.template-minimalista .cv-documento { font-family: 'Inter', sans-serif; color: #3f3f46; }
+.template-minimalista .cv-header { margin-bottom: 40px; }
+.template-minimalista .cv-header h1 { font-size: 2.2rem; font-weight: 300; margin: 0 0 12px 0; letter-spacing: -1px; color: #18181b; }
+.template-minimalista .cv-secao h3 { font-size: 0.75rem; color: #a1a1aa; text-transform: uppercase; letter-spacing: 2px; margin-bottom: 18px; font-weight: 600; }
+.template-minimalista .cv-texto, .template-minimalista li { font-size: 0.85rem; line-height: 1.7; font-weight: 350; }
+.template-minimalista .cv-cargo { font-size: 0.85rem; color: #71717a; margin-bottom: 8px; }
+
+.template-tecnico .cv-documento { font-family: 'Roboto', Arial, sans-serif; }
+.template-tecnico .cv-header h1 { font-family: 'Courier New', Courier, monospace; font-size: 1.8rem; font-weight: bold; color: #111827; }
+.template-tecnico .cv-contatos { font-family: 'Courier New', Courier, monospace; font-size: 0.75rem; }
+.template-tecnico .cv-secao h3 { font-family: 'Courier New', Courier, monospace; font-size: 0.95rem; font-weight: bold; border-bottom: 1px dashed #9ca3af; padding-bottom: 4px; margin-bottom: 14px; color: #059669; }
+.template-tecnico .cv-secao h3::before { content: "> "; color: #059669; }
+
+.template-corporativo .cv-documento { font-family: 'Arial', sans-serif; }
+.template-corporativo .cv-header { background: #1e3a8a; color: white; padding: 32px; margin: -40px -40px 30px -40px; border-radius: 20px 20px 0 0; }
+.template-corporativo .cv-header h1 { color: white; font-size: 1.8rem; }
+.template-corporativo .cv-contatos { color: #bfdbfe; }
+.template-corporativo .cv-secao h3 { background: #f3f4f6; padding: 8px 14px; font-size: 0.9rem; font-weight: bold; color: #1e3a8a; text-transform: uppercase; margin-bottom: 18px; border-left: 4px solid #1e3a8a; }
+
+.template-criativo .cv-documento { font-family: 'Montserrat', 'Avenir', sans-serif; }
+.template-criativo .cv-header { border-bottom: 1px solid #e5e7eb; padding-bottom: 20px; margin-bottom: 32px; }
+.template-criativo .cv-header h1 { font-size: 2rem; font-weight: 900; letter-spacing: -1px; margin: 0 0 6px; }
+.template-criativo .cv-secao { border-left: 2px solid #f43f5e; padding-left: 20px; margin-bottom: 32px; }
+.template-criativo .cv-secao h3 { font-size: 1rem; font-weight: 800; color: #f43f5e; text-transform: lowercase; margin-top: -5px; margin-bottom: 16px; }
+.template-criativo .cv-cargo { font-weight: 600; color: #f43f5e; }
+
+.template-lateral .cv-documento { font-family: 'Inter', sans-serif; display: flex; flex-direction: column; }
+.template-lateral .cv-header { background: linear-gradient(135deg, #0f172a, #1e293b); color: white; margin: -40px -40px 30px -40px; padding: 32px 40px; }
+.template-lateral .cv-header h1 { color: white; font-size: 1.8rem; font-weight: 700; }
+.template-lateral .cv-contatos { color: #cbd5e1; }
+.template-lateral .cv-body { display: flex; gap: 32px; flex-wrap: wrap; }
+.template-lateral .cv-coluna-lateral { flex: 1.2; background: #f8fafc; padding: 24px; border-radius: 20px; order: -1; }
+.template-lateral .cv-coluna-principal { flex: 2.5; }
+.template-lateral .cv-secao h3 { font-size: 0.9rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: #0f172a; border-left: 3px solid #3b82f6; padding-left: 12px; margin-bottom: 18px; }
+
+.template-elegante .cv-documento { font-family: 'Cormorant Garamond', 'Georgia', serif; background: #fefcf7; color: #2d2a24; padding: 48px; }
+.template-elegante .cv-header { text-align: center; margin-bottom: 40px; border-bottom: 1px solid #e2dcd0; padding-bottom: 24px; }
+.template-elegante .cv-header h1 { font-size: 2.5rem; font-weight: 500; letter-spacing: -0.5px; color: #1f1b16; }
+.template-elegante .cv-contatos { font-size: 0.9rem; color: #6b6359; font-style: italic; }
+.template-elegante .cv-secao h3 { font-size: 1.1rem; font-weight: 500; letter-spacing: 1px; color: #8b765a; border-bottom: 1px solid #e2dcd0; padding-bottom: 6px; }
+.template-elegante .cv-texto, .template-elegante li { font-size: 0.95rem; }
+
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 0.8cm; 
+  }
+  .folha-preview,
+  .painel-vidro {
+    box-shadow: none !important;
+    transform: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: 100% !important;
+    background: transparent !important;
+    border: none !important;
+  }
+  .cv-documento {
+    background: white !important;
+    padding: 35px 40px !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    max-width: none !important;
+    color: #1e293b !important;
+    font-size: 11.5pt;
+  }
+  .template-colunas .cv-body {
+    grid-template-columns: 2fr 1fr;
+    gap: 25px;
+  }
+  .cv-item {
+    page-break-inside: avoid;
+    break-inside: avoid;
+  }
+  h3, h1 {
+    page-break-after: avoid;
+    break-after: avoid;
+  }
+}

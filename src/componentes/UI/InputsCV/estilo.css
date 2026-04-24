@@ -1,0 +1,60 @@
+.inputs-modulo {
+  margin-bottom: 48px;
+}
+
+.caixas-texto {
+  display: flex;
+  gap: 28px;
+  flex-wrap: wrap;
+}
+
+.input-grupo {
+  flex: 1;
+  min-width: 280px;
+  display: flex;
+  flex-direction: column;
+}
+
+.input-grupo label {
+  font-size: 0.95rem;
+  color: var(--brutal-red, #ff1e00);
+  margin-bottom: 12px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  letter-spacing: 1px;
+  font-family: 'Syncopate', sans-serif;
+  text-transform: uppercase;
+}
+
+.input-vidro {
+  width: 100%;
+  height: 220px;
+  background: #000;
+  border: 2px solid #333;
+  border-radius: 0px;
+  padding: 16px 20px;
+  color: #0f0;
+  font-family: 'Space Mono', monospace;
+  font-size: 0.95rem;
+  line-height: 1.6;
+  resize: vertical;
+  transition: all 0.1s ease;
+  box-sizing: border-box;
+  box-shadow: inset 4px 4px 0px rgba(0,0,0,0.8);
+}
+
+.input-vidro:focus {
+  outline: none;
+  border-color: var(--brutal-red, #ff1e00);
+  background: #0a0a0a;
+  box-shadow: 6px 6px 0px var(--brutal-red, #ff1e00);
+  color: #fff;
+}
+
+.input-vidro::placeholder {
+  color: #444;
+  font-weight: 400;
+  text-transform: uppercase;
+}
