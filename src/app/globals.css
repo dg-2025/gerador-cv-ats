@@ -27,7 +27,7 @@ body {
 
 .gerador-wrapper {
   min-height: 100vh;
-  padding: 40px 24px;
+  padding: 40px 5px;
   background-color: transparent; 
   color: var(--text-light);
   display: flex;
@@ -39,9 +39,10 @@ body {
 
 .container-gerador {
   width: 100%;
-  max-width: 1000px;
+  max-width: 100%;
   position: relative;
   z-index: 2;
+  padding: 0;
 }
 
 .painel-vidro {
@@ -53,6 +54,7 @@ body {
   padding: 40px;
   box-shadow: var(--brutal-shadow);
   transition: all 0.15s ease-out;
+  width: 100%;
 }
 
 .painel-vidro:hover {
@@ -135,21 +137,14 @@ body {
   border-bottom: 3px solid var(--brutal-red);
   padding-bottom: 8px;
 }
+
 .video-fundo-port {
   position: fixed !important;
-  
   left: 50% !important;
-  
   top: 15% !important;
-  
-  
   width: 1000px !important;
   height: 1000px !important;
-  
-  
   transform: translate(-50%, -50%) rotate(180deg) !important;
-  
-  
   object-fit: cover;
   z-index: -10;
   opacity: 1.8;
@@ -158,12 +153,99 @@ body {
   border-radius: 50%; 
 }
 
-
 @media (max-width: 767px) {
+  .gerador-wrapper {
+    padding: 20px 5px;
+    gap: 32px;
+  }
+  
+  .container-gerador {
+    padding: 0;
+  }
+  
+  .painel-vidro {
+    padding: 20px 10px;
+    border-width: 2px;
+    box-shadow: 4px 4px 0px #ff1e00;
+  }
+  
+  .painel-vidro:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #ff1e00;
+  }
+  
+  .gerador-header h1 {
+    font-size: 2rem;
+    text-shadow: 3px 3px 0px var(--brutal-red);
+  }
+  
+  .text-destaque {
+    text-shadow: 2px 2px 0px #fff;
+  }
+  
+  .badge-pro {
+    padding: 6px 16px;
+    font-size: 0.7rem;
+    box-shadow: 3px 3px 0px #fff;
+  }
+  
+  .gerador-header p {
+    font-size: 0.8rem;
+    padding: 6px 12px;
+  }
+  
+  .secao-titulo {
+    font-size: 0.9rem;
+    border-bottom-width: 2px;
+  }
+  
   .video-fundo-port {
     top: 12% !important;
     width: 500px !important;
     height: 500px !important;
+  }
+}
+
+@media (max-width: 480px) {
+  .gerador-wrapper {
+    padding: 12px 5px;
+    gap: 24px;
+  }
+  
+  .container-gerador {
+    padding: 0;
+  }
+  
+  .painel-vidro {
+    padding: 15px 6px;
+    border-width: 1.5px;
+    box-shadow: 3px 3px 0px #ff1e00;
+  }
+  
+  .painel-vidro:hover {
+    transform: translate(1px, 1px);
+    box-shadow: 1px 1px 0px #ff1e00;
+  }
+  
+  .gerador-header h1 {
+    font-size: 1.5rem;
+    text-shadow: 2px 2px 0px var(--brutal-red);
+  }
+  
+  .text-destaque {
+    text-shadow: 1px 1px 0px #fff;
+  }
+  
+  .badge-pro {
+    font-size: 0.6rem;
+    padding: 4px 10px;
+    box-shadow: 2px 2px 0px #fff;
+  }
+  
+  .video-fundo-port {
+    width: 350px !important;
+    height: 350px !important;
+    opacity: 1.2 !important;
   }
 }
 

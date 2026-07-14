@@ -1,0 +1,178 @@
+/* src/components/sections/ListaTemplates/style.module.css */
+.templates-modulo {
+  margin-bottom: 16px;
+  width: 100%;
+}
+
+.grid-templates {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+  width: 100%;
+}
+
+.card-template {
+  background: #000;
+  border: 2px solid #333;
+  border-radius: 0px;
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+  transition: all 0.1s ease;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 3px 3px 0px #1a1a1a;
+}
+
+.card-template:hover {
+  transform: translate(2px, 2px);
+  box-shadow: 1px 1px 0px var(--brutal-red, #ff1e00);
+  border-color: var(--brutal-red, #ff1e00);
+}
+
+.card-template.ativo {
+  border-color: #ffffff;
+  background: var(--brutal-red, #ff1e00);
+  box-shadow: 4px 4px 0px #ffffff;
+  transform: translate(-1px, -1px);
+}
+
+.card-info {
+  padding: 10px;
+  border-top: 2px solid #333;
+}
+
+.card-template:hover .card-info {
+  border-top-color: var(--brutal-red, #ff1e00);
+}
+
+.card-template.ativo .card-info {
+  border-top-color: #ffffff;
+  background: var(--brutal-red, #ff1e00);
+}
+
+.card-template h4 {
+  margin: 0 0 2px 0;
+  color: #ffffff;
+  font-size: 0.7rem;
+  font-weight: 700;
+  font-family: 'Syncopate', sans-serif;
+  text-transform: uppercase;
+}
+
+.card-template.ativo h4 {
+  color: #000000;
+}
+
+.card-template p {
+  margin: 0;
+  color: #aaaaaa;
+  font-size: 0.6rem;
+  line-height: 1.3;
+}
+
+.card-template.ativo p {
+  color: #222222;
+  font-weight: 700;
+}
+
+.brilho-ativo {
+  display: none;
+}
+
+.card-preview {
+  height: 70px;
+  background: #111;
+  padding: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-template.ativo .card-preview {
+  background: #000;
+}
+
+.wireframe {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  justify-content: center;
+}
+
+.linha { background: #555; height: 2px; border-radius: 0px; }
+.card-template.ativo .linha { background: #ffffff; }
+.linha.centro { margin: 0 auto; }
+.linha.destaque { background: var(--brutal-red, #ff1e00); }
+.card-template.ativo .linha.destaque { background: #000000; }
+.linha.bg-escuro { background: #333; }
+.linha.bg-branco { background: #ffffff; }
+.linha.separator { background: #444; height: 1px; }
+.linha.separator-thick { background: #444; height: 2px; }
+.linha.border-dashed { background: transparent; border-bottom: 1px dashed #555; height: 1px; }
+.linha.block-bg { background: #333; padding: 3px; border-radius: 0px; height: auto; }
+.h-4 { height: 3px; }
+.h-6 { height: 4px; }
+.h-8 { height: 6px; }
+.w-30 { width: 30%; }
+.w-40 { width: 40%; }
+.w-50 { width: 50%; }
+.w-60 { width: 60%; }
+.w-70 { width: 70%; }
+.w-80 { width: 80%; }
+.w-90 { width: 90%; }
+.w-100 { width: 100%; }
+.mt { margin-top: 4px; }
+.mb { margin-bottom: 4px; }
+.mt-large { margin-top: 8px; }
+
+.wf-body { display: flex; gap: 4px; }
+.wf-col-esq { flex: 2; display: flex; flex-direction: column; gap: 2px; }
+.wf-col-dir { flex: 1; display: flex; flex-direction: column; gap: 2px; }
+.wf-col-borda { border-left: 2px solid var(--brutal-red, #ff1e00); padding-left: 4px; display: flex; flex-direction: column; gap: 2px; width: 100%; }
+.card-template.ativo .wf-col-borda { border-left-color: #000; }
+
+@media (max-width: 767px) {
+  .grid-templates {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  
+  .card-info {
+    padding: 6px 8px;
+  }
+  
+  .card-template h4 {
+    font-size: 0.6rem;
+  }
+  
+  .card-template p {
+    font-size: 0.5rem;
+    line-height: 1.2;
+  }
+  
+  .card-preview {
+    height: 55px;
+    padding: 6px;
+  }
+  
+  .card-template {
+    box-shadow: 2px 2px 0px #1a1a1a;
+    border-width: 1.5px;
+  }
+  
+  .card-template.ativo {
+    box-shadow: 3px 3px 0px #ffffff;
+  }
+  
+  .linha { height: 1.5px; }
+  .h-4 { height: 2px; }
+  .h-6 { height: 3px; }
+  .h-8 { height: 4px; }
+  .mt { margin-top: 3px; }
+  .mb { margin-bottom: 3px; }
+  .mt-large { margin-top: 6px; }
+  .wf-body { gap: 3px; }
+}

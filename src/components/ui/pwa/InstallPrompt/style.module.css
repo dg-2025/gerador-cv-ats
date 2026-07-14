@@ -1,0 +1,146 @@
+.installPromptBanner {
+  position: fixed;
+  bottom: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: calc(100% - 40px);
+  max-width: 420px;
+  background: rgba(0, 0, 0, 0.95);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(255, 30, 0, 0.3);
+  border-radius: 16px;
+  padding: 16px;
+  z-index: 9999;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+  animation: slideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(40px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+.promptHeader {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.appMiniIcon {
+  width: 48px;
+  height: 48px;
+  border-radius: 12px;
+  flex-shrink: 0;
+}
+
+.promptText {
+  flex: 1;
+}
+
+.promptText strong {
+  display: block;
+  color: #fff;
+  font-size: 0.95rem;
+}
+
+.promptText p {
+  color: #a0aec0;
+  font-size: 0.8rem;
+  margin: 2px 0 0 0;
+}
+
+.closePrompt {
+  background: none;
+  border: none;
+  color: #718096;
+  cursor: pointer;
+  padding: 4px;
+  transition: color 0.2s;
+}
+
+.closePrompt:hover {
+  color: #fff;
+}
+
+.promptBody {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.iosInstruction {
+  color: #e2e8f0;
+  font-size: 0.85rem;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.iosInstruction strong {
+  color: #ff1e00;
+}
+
+.btnInstallAndroid {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff1e00, #cc1800);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+
+.btnInstallAndroid:hover {
+  background: linear-gradient(135deg, #cc1800, #991200);
+  transform: scale(1.02);
+}
+
+.btnInstallIos {
+  width: 100%;
+  padding: 12px;
+  background: linear-gradient(135deg, #ff1e00, #cc1800);
+  color: #fff;
+  border: none;
+  border-radius: 10px;
+  font-weight: bold;
+  font-size: 0.95rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btnInstallIos:hover {
+  background: linear-gradient(135deg, #cc1800, #991200);
+  transform: scale(1.02);
+}
+
+.ios .btnInstallIos {
+  display: block;
+}
+
+.android .btnInstallIos {
+  display: none;
+}
+
+.other .btnInstallAndroid {
+  display: none;
+}
+
+.other .btnInstallIos {
+  display: none;
+}

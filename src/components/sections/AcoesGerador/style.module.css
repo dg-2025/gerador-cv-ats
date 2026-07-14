@@ -1,0 +1,126 @@
+/* src/components/sections/AcoesGerador/style.module.css */
+.acoes-modulo {
+  display: flex;
+  gap: 12px;
+  margin-top: -8px;
+  margin-bottom: 32px;
+  flex-wrap: wrap;
+  width: 100%;
+}
+
+.btn-gerar,
+.btn-baixar {
+  flex: 1;
+  min-width: 200px;
+  padding: 14px 20px;
+  border-radius: 0px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: 'Space Mono', monospace;
+  border: none;
+  cursor: pointer;
+  transition: all 0.1s ease-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-content {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: relative;
+  z-index: 2;
+}
+
+.btn-gerar {
+  background: #ffffff;
+  color: #000000;
+  border: 3px solid #000;
+  box-shadow: 6px 6px 0px var(--brutal-red, #ff1e00);
+}
+
+.btn-gerar:hover:not(:disabled) {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0px var(--brutal-red, #ff1e00);
+  background: var(--brutal-red, #ff1e00);
+  color: #ffffff;
+}
+
+.btn-gerar:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  filter: grayscale(1);
+  background: #333;
+  color: #888;
+  border-color: #222;
+  box-shadow: none;
+}
+
+.btn-baixar {
+  background: #000000;
+  color: #ffffff;
+  border: 3px solid var(--brutal-red, #ff1e00);
+  box-shadow: 6px 6px 0px #ffffff;
+}
+
+.btn-baixar:hover {
+  transform: translate(3px, 3px);
+  box-shadow: 3px 3px 0px #ffffff;
+  background: var(--brutal-red, #ff1e00);
+  border-color: #ffffff;
+}
+
+@media (max-width: 767px) {
+  .acoes-modulo {
+    gap: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .btn-gerar,
+  .btn-baixar {
+    flex: 1 1 100%;
+    min-width: auto;
+    padding: 12px 16px;
+    font-size: 0.7rem;
+    box-shadow: 4px 4px 0px var(--brutal-red, #ff1e00);
+  }
+  
+  .btn-gerar:hover:not(:disabled) {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px var(--brutal-red, #ff1e00);
+  }
+  
+  .btn-baixar {
+    box-shadow: 4px 4px 0px #ffffff;
+  }
+  
+  .btn-baixar:hover {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #ffffff;
+  }
+  
+  .btn-content {
+    gap: 6px;
+  }
+}
+
+@keyframes brutalJelly {
+  0% { transform: scale(1, 1) translate(0, 0); }
+  20% { transform: scale(1.08, 0.92) translate(3px, 3px); }
+  40% { transform: scale(0.92, 1.08) translate(3px, 3px); }
+  60% { transform: scale(1.04, 0.96) translate(3px, 3px); }
+  80% { transform: scale(0.98, 1.02) translate(3px, 3px); }
+  100% { transform: scale(1, 1) translate(3px, 3px); }
+}
+
+@keyframes brutalJellyClick {
+  0% { transform: scale(1, 1) translate(3px, 3px); }
+  50% { transform: scale(0.9, 0.9) translate(4px, 4px); box-shadow: 0px 0px 0px var(--brutal-red, #ff1e00); }
+  100% { transform: scale(1.05, 0.95) translate(3px, 3px); box-shadow: 3px 3px 0px var(--brutal-red, #ff1e00); }
+}

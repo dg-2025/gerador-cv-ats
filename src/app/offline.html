@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Offline - Gerador CV ATS</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #000000;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
+    }
+    .offline-container {
+      text-align: center;
+      max-width: 400px;
+    }
+    .offline-icon {
+      font-size: 72px;
+      margin-bottom: 20px;
+      display: block;
+    }
+    h1 {
+      font-size: 28px;
+      margin-bottom: 12px;
+      color: #fff;
+    }
+    h1 span {
+      color: #ff1e00;
+    }
+    p {
+      color: #a0aec0;
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    .btn-retry {
+      background: #ff1e00;
+      color: #fff;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 8px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-retry:hover {
+      background: #cc1800;
+    }
+    .btn-retry:active {
+      transform: scale(0.98);
+    }
+    .logo {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 30px;
+      letter-spacing: -0.5px;
+    }
+    .logo span {
+      color: #ff1e00;
+    }
+    .sub {
+      color: #ff1e00;
+      font-size: 12px;
+      letter-spacing: 3px;
+      text-transform: uppercase;
+      margin-bottom: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="offline-container">
+    <div class="logo">CV <span>ATS</span></div>
+    <div class="sub">⚡ Penetration Ready</div>
+    <span class="offline-icon">📡</span>
+    <h1>Você está <span>offline</span></h1>
+    <p>
+      Parece que você perdeu a conexão com a internet.
+      Verifique sua rede e tente novamente.
+    </p>
+    <button class="btn-retry" onclick="location.reload()">Tentar novamente</button>
+  </div>
+</body>
+</html>

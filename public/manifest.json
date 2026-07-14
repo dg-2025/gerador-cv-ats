@@ -6,17 +6,110 @@
   "display": "standalone",
   "background_color": "#000000",
   "theme_color": "#ff1e00",
+  "orientation": "portrait-primary",
+  "categories": ["productivity", "business", "utilities"],
   "icons": [
     {
-      "src": "/imagens/lOGO.png",
-      "sizes": "192x192",
+      "src": "/imagens/logo/icons/icon-72x72.png",
+      "sizes": "72x72",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable any"
     },
     {
-      "src": "/imagens/lOGO.png",
+      "src": "/imagens/logo/icons/icon-96x96.png",
+      "sizes": "96x96",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-128x128.png",
+      "sizes": "128x128",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-144x144.png",
+      "sizes": "144x144",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-152x152.png",
+      "sizes": "152x152",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-384x384.png",
+      "sizes": "384x384",
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-512x512.png",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "maskable any"
+    },
+    {
+      "src": "/imagens/logo/icons/icon-1024x1024.png",
+      "sizes": "1024x1024",
+      "type": "image/png",
+      "purpose": "maskable any"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/imagens/logo/screenshots/screenshot-1.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Página inicial do Gerador CV ATS"
+    },
+    {
+      "src": "/imagens/logo/screenshots/screenshot-2.png",
+      "sizes": "1280x720",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Visualização do currículo gerado"
+    },
+    {
+      "src": "/imagens/logo/screenshots/screenshot-mobile-1.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile - Entrada de dados"
+    },
+    {
+      "src": "/imagens/logo/screenshots/screenshot-mobile-2.png",
+      "sizes": "1080x1920",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Mobile - Preview do currículo"
+    }
+  ],
+  "prefer_related_applications": false,
+  "related_applications": [],
+  "lang": "pt-BR",
+  "dir": "ltr",
+  "shortcuts": [
+    {
+      "name": "Gerar Currículo",
+      "short_name": "Gerar",
+      "description": "Gere um novo currículo otimizado para ATS",
+      "url": "/",
+      "icons": [
+        {
+          "src": "/imagens/logo/icons/icon-96x96.png",
+          "sizes": "96x96"
+        }
+      ]
     }
   ]
 }
