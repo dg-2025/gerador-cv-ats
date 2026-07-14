@@ -24,29 +24,28 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
 }) => {
   const [exportandoMobile, setExportandoMobile] = useState(false);
 
-  // Função auxiliar para detectar se o acesso vem de um dispositivo móvel (iOS ou Android)
+  // Detecta se o usuário está acessando por um dispositivo móvel
   const isMobileDevice = (): boolean => {
     if (typeof window === "undefined") return false;
     const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
     return /android|iphone|ipad|ipod/i.test(userAgent.toLowerCase());
   };
 
-  // Prepara e isola estruturalmente o HTML idêntico ao que é renderizado no preview
+  // Prepara o HTML limpando qualquer elemento fora da folha de currículo
   const obterHtmlDoCurriculo = (cvDocumento: Element): string => {
-    // Coleta as regras CSS ativas e fontes para injetar no PDF remoto
     let estilosCSS = '';
     
-    // 1. Coleta fontes e links externos
+    // 1. Coleta links externos (como Google Fonts)
     const links = Array.from(document.head.querySelectorAll('link[rel="stylesheet"]'))
       .map(link => link.outerHTML)
       .join('\n');
 
-    // 2. Coleta tags de estilo estáticas
+    // 2. Coleta tags <style> estáticas do documento
     const stylesTags = Array.from(document.head.querySelectorAll('style'))
       .map(style => style.outerHTML)
       .join('\n');
 
-    // 3. Importa de forma segura as regras dinâmicas compiladas de CSS Modules
+    // 3. Coleta dinamicamente as regras CSS geradas pelo compilador do NextJS (CSS Modules)
     Array.from(document.styleSheets).forEach((sheet) => {
       try {
         if (sheet.cssRules) {
@@ -57,6 +56,13 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
       } catch (e) {
         // Ignora erros de CORS em stylesheets externos
       }
+    });
+
+    // Envelopamos o HTML garantindo que o body possua a classe correta do template
+    // e limpando elementos interativos como 'contenteditable' para não irem pro PDF
+    const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
+    cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
+      el.removeAttribute('contenteditable');
     });
 
     return `
@@ -70,7 +76,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
           <style>
             ${estilosCSS}
             
-            /* Overrides cruciais para a folha A4 no servidor Puppeteer */
+            /* Ajustes estritos para o layout A4 no Puppeteer */
             @page {
               size: A4 portrait;
               margin: 0 !important;
@@ -84,6 +90,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
               -webkit-print-color-adjust: exact !important;
               print-color-adjust: exact !important;
             }
+            /* Garante que o container do currículo ocupe o espaço exato da folha A4 no PDF */
             .cv-documento, [class*="cvDocumento"] {
               width: 210mm !important;
               min-height: 297mm !important;
@@ -96,9 +103,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
           </style>
         </head>
         <body class="template-${template}">
-          <div class="cv-documento">
-            ${cvDocumento.innerHTML}
-          </div>
+          ${cloneDocumento.outerHTML}
         </body>
       </html>
     `;
@@ -107,11 +112,11 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
   const handleExportPDF = async () => {
     if (!cvParaExportar) return;
 
-    // Captura estritamente o componente de conteúdo real do currículo
+    // Captura estritamente o container do currículo gerado
     const cvDocumento = document.querySelector('.cv-documento');
 
     if (!cvDocumento) {
-      alert("Componente do currículo não encontrado para exportação.");
+      alert("Componente do currículo não encontrado para exportação. Certifique-se de que ele foi gerado na tela.");
       return;
     }
 
@@ -125,38 +130,37 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
       try {
         const htmlCompleto = obterHtmlDoCurriculo(cvDocumento);
 
-        // Dispara a geração de PDF no nosso microsserviço no backend (Server-side Puppeteer)
+        // Dispara a geração de PDF no backend (Puppeteer remoto)
         const response = await fetch('/api/gerar-pdf', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ html: htmlCompleto, filename: nomeArquivo }),
         });
 
-        if (!response.ok) throw new Error("Erro na resposta do servidor");
+        if (!response.ok) throw new Error("Erro na geração de PDF via servidor");
 
         const pdfBlob = await response.blob();
         
-        // Estratégia de Download segura e universal para Mobile
+        // Cria o link para baixar o arquivo
         const blobUrl = window.URL.createObjectURL(new Blob([pdfBlob], { type: 'application/pdf' }));
         const downloadLink = document.createElement('a');
         downloadLink.href = blobUrl;
         downloadLink.download = nomeArquivo;
         
-        // Garante suporte a WebViews do iOS e Android adicionando o link ao body temporariamente
+        // Insere temporariamente no documento para forçar o clique em navegadores mobile
         document.body.appendChild(downloadLink);
         downloadLink.click();
         
-        // Limpa referências após execução rápida
         setTimeout(() => {
           document.body.removeChild(downloadLink);
           window.URL.revokeObjectURL(blobUrl);
         }, 150);
 
       } catch (error) {
-        console.error("Falha ao exportar PDF no dispositivo móvel:", error);
-        alert("Ocorreu um erro ao gerar o PDF. Tentando abrir em nova guia...");
+        console.error("Erro na exportação Mobile:", error);
+        alert("Ocorreu um erro ao baixar o arquivo. Tentando abrir o PDF em uma nova aba...");
         
-        // Fallback rápido se o download direto via Blob for bloqueado pelo WebView
+        // Fallback alternativo usando File Reader para abrir em nova guia no mobile
         try {
           const htmlCompleto = obterHtmlDoCurriculo(cvDocumento);
           const response = await fetch('/api/gerar-pdf', {
@@ -173,7 +177,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
           };
           reader.readAsDataURL(pdfBlob);
         } catch (fbError) {
-          alert("Não foi possível processar o documento neste navegador.");
+          alert("Não foi possível gerar o PDF neste navegador.");
         }
       } finally {
         setExportandoMobile(false);
