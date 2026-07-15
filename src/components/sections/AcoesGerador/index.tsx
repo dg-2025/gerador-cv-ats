@@ -1,8 +1,10 @@
 // src/components/sections/AcoesGerador/index.tsx
 "use client";
-import React from 'react';
-import { Bot, Download } from 'lucide-react';
+import React, { useState } from 'react';
+import { Bot, Download, Loader2 } from 'lucide-react';
 import { CurriculoData } from '@/types/cv';
+import html2canvas from 'html2canvas';
+import { jsPDF } from 'jspdf';
 import styles from "./style.module.css";
 
 interface AcoesGeradorProps {
@@ -22,249 +24,123 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
   cvParaExportar,
   template
 }) => {
+  const [isExporting, setIsExporting] = useState(false);
 
-  // Detecta se o usuário está em um dispositivo móvel (iOS ou Android)
-  const isMobileDevice = (): boolean => {
-    if (typeof window === "undefined") return false;
-    const userAgent = window.navigator.userAgent || window.navigator.vendor || (window as any).opera;
-    return /android|iphone|ipad|ipod/i.test(userAgent.toLowerCase());
-  };
-
-  const handleExportPDF = () => {
+  const handleExportPDF = async () => {
     if (!cvParaExportar) return;
+    
+    setIsExporting(true);
 
-    // Captura estritamente o componente de conteúdo real do currículo
-    const cvDocumento = document.querySelector('.cv-documento');
+    try {
+      // 1. Aguarda as fontes carregarem perfeitamente
+      if (document.fonts) {
+        await document.fonts.ready;
+      }
 
-    if (!cvDocumento) {
-      alert("Componente do currículo não encontrado para exportação.");
-      return;
-    }
-
-    // ==========================================
-    // ESTRATÉGIA MOBILE (Abertura Direta para Salvamento/Impressão)
-    // ==========================================
-    if (isMobileDevice()) {
-      // Cria uma nova aba temporária onde carregaremos apenas o currículo e chamaremos a impressão do sistema.
-      // Isso contorna bloqueios de WebViews do Instagram, Linkedin, Safari e PWA Standalone.
-      const win = window.open('', '_blank');
-      if (!win) {
-        alert("Por favor, permita pop-ups para exportar seu currículo.");
+      const cvDocumento = document.querySelector('.cv-documento') as HTMLElement;
+      if (!cvDocumento) {
+        alert("Componente do currículo não encontrado.");
+        setIsExporting(false);
         return;
       }
 
-      // Captura estilos css compilados de forma idêntica ao desktop
-      let estilosCSS = '';
-      const documentHead = document.head;
+      // 2. Cria um container temporário e invisível forçado no tamanho A4
+      const printContainer = document.createElement('div');
+      printContainer.style.position = 'fixed';
+      printContainer.style.left = '-9999px';
+      printContainer.style.top = '0';
+      printContainer.style.width = '794px'; // Largura exata A4 em px (96dpi)
+      printContainer.style.backgroundColor = '#ffffff';
+      printContainer.className = `template-${template}`;
 
-      // 1. Clona folhas de estilo em link (fontes do Google, etc)
-      const links = Array.from(documentHead.querySelectorAll('link[rel="stylesheet"]'))
-        .map(link => link.cloneNode(true) as HTMLElement)
-        .map(el => el.outerHTML)
-        .join('\n');
-
-      // 2. Clona tags de estilo geradas dinamicamente
-      const stylesTags = Array.from(documentHead.querySelectorAll('style'))
-        .map(style => style.cloneNode(true) as HTMLElement)
-        .map(el => el.outerHTML)
-        .join('\n');
-
-      // 3. Importa regras compiladas de CSS Modules
-      Array.from(document.styleSheets).forEach((sheet) => {
-        try {
-          if (sheet.cssRules) {
-            Array.from(sheet.cssRules).forEach((rule) => {
-              estilosCSS += rule.cssText + '\n';
-            });
-          }
-        } catch (e) {
-          // Ignora erros de CORS
-        }
-      });
-
-      // Remove atributos "contenteditable" no clone antes de renderizar
-      const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
-      cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
+      // 3. Clona o currículo para dentro desse container
+      const clone = cvDocumento.cloneNode(true) as HTMLElement;
+      
+      // Remove atributos editáveis para não interferir na captura
+      clone.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
       });
 
-      win.document.open();
-      win.document.write(`
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-          <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Currículo - ${cvParaExportar.dadosPessoais?.nome || 'Profissional'}</title>
-            ${links}
-            ${stylesTags}
-            <style>
-              ${estilosCSS}
-              
-              @page {
-                size: A4 portrait;
-                margin: 0 !important;
-              }
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                width: 100% !important;
-                height: 100% !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              .cv-documento, [class*="cvDocumento"] {
-                width: 210mm !important;
-                min-height: 297mm !important;
-                padding: 20mm !important;
-                margin: 0 auto !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-                box-shadow: none !important;
-              }
-              @media print {
-                html, body {
-                  width: 210mm !important;
-                  height: 297mm !important;
-                }
-              }
-            </style>
-          </head>
-          <body class="template-${template}">
-            ${cloneDocumento.outerHTML}
-            <script>
-              // Aguarda as fontes externas estarem prontas para chamar a tela de PDF/Impressão nativa
-              window.onload = function() {
-                if (document.fonts) {
-                  document.fonts.ready.then(function() {
-                    setTimeout(function() {
-                      window.print();
-                    }, 250);
-                  });
-                } else {
-                  setTimeout(function() {
-                    window.print();
-                  }, 500);
-                }
-              };
-            </script>
-          </body>
-        </html>
-      `);
-      win.document.close();
-      return;
-    }
+      // Força estilos no clone para garantir o layout A4 perfeito
+      clone.style.width = '100%';
+      clone.style.minHeight = '1123px';
+      clone.style.margin = '0';
+      clone.style.padding = '40px'; // Margem interna do PDF
+      clone.style.boxShadow = 'none';
+      clone.style.transform = 'none';
 
-    // ==========================================
-    // ESTRATÉGIA DESKTOP (MANTIDA 100% IDÊNTICA)
-    // ==========================================
-    const iframe = document.createElement('iframe');
-    iframe.style.position = 'fixed';
-    iframe.style.right = '0';
-    iframe.style.bottom = '0';
-    iframe.style.width = '0';
-    iframe.style.height = '0';
-    iframe.style.border = '0';
-    document.body.appendChild(iframe);
+      printContainer.appendChild(clone);
+      document.body.appendChild(printContainer);
 
-    const doc = iframe.contentWindow?.document || iframe.contentDocument;
-    if (!doc) return;
+      // 4. Tira um "print" de alta resolução do elemento clonado
+      const canvas = await html2canvas(clone, {
+        scale: 2, // Aumenta a qualidade/resolução
+        useCORS: true, // Permite carregar fontes e imagens externas
+        backgroundColor: '#ffffff',
+        logging: false
+      });
 
-    doc.open();
-    doc.write(`
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-        <head>
-          <meta charset="UTF-8">
-          <title>Currículo - ${cvParaExportar.dadosPessoais?.nome || 'Profissional'}</title>
-          <style>
-            @page {
-              size: A4 portrait;
-              margin: 0 !important;
-            }
-            @media print {
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                width: 210mm !important;
-                height: 297mm !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-              .cv-documento, [class*="cvDocumento"] {
-                width: 210mm !important;
-                min-height: 297mm !important;
-                padding: 20mm !important;
-                margin: 0 auto !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-              }
-            }
-          </style>
-        </head>
-        <body class="template-${template}">
-          ${cvDocumento.outerHTML}
-        </body>
-      </html>
-    `);
-    doc.close();
+      // 5. Remove o container temporário
+      document.body.removeChild(printContainer);
 
-    const documentHead = document.head;
-    const iframeHead = doc.head;
+      // 6. Converte o canvas para PDF e baixa
+      const imgData = canvas.toDataURL('image/png');
+      const pdf = new jsPDF({
+        orientation: 'portrait',
+        unit: 'mm',
+        format: 'a4'
+      });
 
-    Array.from(documentHead.querySelectorAll('link[rel="stylesheet"]')).forEach((link) => {
-      iframeHead.appendChild(link.cloneNode(true));
-    });
+      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
+      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
 
-    Array.from(documentHead.querySelectorAll('style')).forEach((style) => {
-      iframeHead.appendChild(style.cloneNode(true));
-    });
+      // Adiciona a imagem. Se o currículo tiver mais de uma página (for mais longo), ele quebra a página
+      let heightLeft = pdfHeight;
+      let position = 0;
+      const pageHeight = 297; // 297mm (Altura do A4)
 
-    Array.from(document.styleSheets).forEach((sheet) => {
-      try {
-        if (sheet.cssRules) {
-          const newStyle = doc.createElement('style');
-          Array.from(sheet.cssRules).forEach((rule) => {
-            newStyle.appendChild(doc.createTextNode(rule.cssText));
-          });
-          iframeHead.appendChild(newStyle);
-        }
-      } catch (e) {
-        // Ignora erros de CORS de fontes externas, se houver
+      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+      heightLeft -= pageHeight;
+
+      while (heightLeft >= 0) {
+        position = heightLeft - pdfHeight;
+        pdf.addPage();
+        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
+        heightLeft -= pageHeight;
       }
-    });
 
-    iframe.contentWindow?.focus();
+      // 7. Salva o arquivo diretamente no dispositivo
+      const nomeArquivo = cvParaExportar.dadosPessoais?.nome 
+        ? `Curriculo_${cvParaExportar.dadosPessoais.nome.replace(/\s+/g, '_')}.pdf` 
+        : 'Curriculo_ATS.pdf';
+        
+      pdf.save(nomeArquivo);
 
-    const triggerPrint = () => {
-      iframe.contentWindow?.print();
-      setTimeout(() => {
-        document.body.removeChild(iframe);
-      }, 1000);
-    };
-
-    if (iframe.contentWindow?.navigator) {
-      setTimeout(triggerPrint, 150);
-    } else {
-      setTimeout(triggerPrint, 500);
+    } catch (error) {
+      console.error("Erro ao gerar PDF:", error);
+      alert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
+    } finally {
+      setIsExporting(false);
     }
   };
 
   return (
     <div className={styles["acoes-modulo"]}>
-      <button onClick={onGerar} disabled={loading || disabled} className={styles["btn-gerar"]}>
+      <button onClick={onGerar} disabled={loading || disabled || isExporting} className={styles["btn-gerar"]}>
         {loading ? (
-          <span className={styles["btn-content"]}>Processando IA (Aguarde)...</span>
+          <span className={styles["btn-content"]}><Loader2 size={20} className="animate-spin" style={{marginRight: '8px'}} /> Processando IA...</span>
         ) : (
-          <span className={styles["btn-content"]}><Bot size={20} /> Gerar Currículo Otimizado</span>
+          <span className={styles["btn-content"]}><Bot size={20} style={{marginRight: '8px'}} /> Gerar Currículo Otimizado</span>
         )}
       </button>
 
       {hasCv && (
-        <button onClick={handleExportPDF} className={styles["btn-baixar"]}>
-          <Download size={20} /> Exportar PDF
+        <button onClick={handleExportPDF} disabled={isExporting} className={styles["btn-baixar"]}>
+          {isExporting ? (
+            <><Loader2 size={20} className="animate-spin" /> Gerando PDF...</>
+          ) : (
+            <><Download size={20} /> Baixar PDF</>
+          )}
         </button>
       )}
     </div>
