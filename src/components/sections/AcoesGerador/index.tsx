@@ -5,6 +5,20 @@ import { Bot, Download, Loader2 } from 'lucide-react';
 import { CurriculoData } from '@/types/cv';
 import styles from "./style.module.css";
 
+// Importações para gerar PDF com texto real (Vetorial / ATS-Friendly)
+import pdfMake from "pdfmake/build/pdfmake";
+import pdfFonts from "pdfmake/build/vfs_fonts";
+import htmlToPdfmake from "html-to-pdfmake";
+
+// Inicializa os fontes do pdfMake para o ambiente do navegador
+const pdfMakeAny = pdfMake as any;
+
+if (pdfMakeAny) {
+  pdfMakeAny.vfs = pdfFonts && (pdfFonts as any).pdfMake 
+    ? (pdfFonts as any).pdfMake.vfs 
+    : pdfMakeAny.vfs;
+}
+
 interface AcoesGeradorProps {
   onGerar: () => Promise<void> | void;
   loading: boolean;
@@ -29,6 +43,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
     setIsExporting(true);
 
     try {
+      // 1. Busca cirurgicamente apenas o elemento do currículo
       const cvDocumento = document.querySelector('.cv-documento');
       if (!cvDocumento) {
         alert("Componente do currículo não encontrado.");
@@ -36,118 +51,72 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
         return;
       }
 
-      // 1. Captura os estilos e fontes da página atual
-      let estilosCSS = '';
-      const documentHead = document.head;
-      
-      const links = Array.from(documentHead.querySelectorAll('link[rel="stylesheet"]'))
-        .map(link => link.outerHTML).join('\n');
-        
-      const stylesTags = Array.from(documentHead.querySelectorAll('style'))
-        .map(style => style.outerHTML).join('\n');
-
-      Array.from(document.styleSheets).forEach((sheet) => {
-        try {
-          if (sheet.cssRules) {
-            Array.from(sheet.cssRules).forEach((rule) => {
-              estilosCSS += rule.cssText + '\n';
-            });
-          }
-        } catch (e) { /* Ignora erros de CORS de fontes externas */ }
-      });
-
-      // 2. Clona o currículo e remove os atributos de edição
+      // 2. Remove temporariamente o atributo contenteditable para evitar sujeira no texto do PDF
       const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
       cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
       });
 
-      // 3. Cria um iframe invisível para processar a impressão isolada
-      const iframe = document.createElement('iframe');
-      iframe.style.position = 'fixed';
-      iframe.style.right = '-9999px';
-      iframe.style.bottom = '-9999px';
-      iframe.style.width = '0';
-      iframe.style.height = '0';
-      iframe.style.border = '0';
-      document.body.appendChild(iframe);
+      // 3. Converte o HTML real em estrutura de dados nativa do PDF (Vetor de texto)
+      // Passamos o window para o html-to-pdfmake interpretar corretamente no cliente
+      const htmlConvertido = htmlToPdfmake(cloneDocumento.innerHTML, {
+        window: window,
+        tableAutoSize: true
+      });
 
-      const doc = iframe.contentWindow?.document || iframe.contentDocument;
-      if (!doc) throw new Error("Não foi possível criar o ambiente de impressão.");
-
-      // 4. Injeta o HTML forçando as proporções do A4 (A MÁGICA PARA O MOBILE AQUI)
-      doc.open();
-      doc.write(`
-        <!DOCTYPE html>
-        <html lang="pt-BR">
-          <head>
-            <meta charset="UTF-8">
-            <!-- Força o celular a renderizar na largura do A4 (aprox 794px) -->
-            <meta name="viewport" content="width=794, initial-scale=1.0, maximum-scale=1.0">
-            <title>Curriculo_${cvParaExportar.dadosPessoais?.nome?.replace(/\s+/g, '_') || 'ATS'}</title>
-            ${links}
-            ${stylesTags}
-            <style>
-              ${estilosCSS}
-              
-              /* Regras rígidas para forçar o tamanho do papel, independente da tela */
-              @page {
-                size: A4 portrait;
-                margin: 0 !important;
-              }
-              
-              html, body {
-                margin: 0 !important;
-                padding: 0 !important;
-                background: #ffffff !important;
-                /* As medidas abaixo impedem que o texto esprema no celular */
-                width: 210mm !important;
-                min-height: 297mm !important;
-                -webkit-print-color-adjust: exact !important;
-                print-color-adjust: exact !important;
-              }
-
-              .cv-documento {
-                width: 210mm !important;
-                min-height: 297mm !important;
-                padding: 15mm !important;
-                margin: 0 auto !important;
-                box-sizing: border-box !important;
-                background: #ffffff !important;
-                box-shadow: none !important;
-                transform: none !important;
-              }
-            </style>
-          </head>
-          <body class="template-${template}">
-            ${cloneDocumento.outerHTML}
-            <script>
-              // Aguarda as fontes carregarem e chama a impressão nativa
-              window.onload = () => {
-                setTimeout(() => {
-                  window.print();
-                }, 500); // Meio segundo para o navegador estabilizar o CSS
-              };
-            </script>
-          </body>
-        </html>
-      `);
-      doc.close();
-
-      // 5. Foca no iframe para a tela de impressão abrir corretamente no iOS/Android
-      iframe.contentWindow?.focus();
-
-      // 6. Limpa o iframe após um tempo (para não poluir a memória)
-      setTimeout(() => {
-        if (document.body.contains(iframe)) {
-          document.body.removeChild(iframe);
+      // 4. Define as configurações de página e tipografia do PDF (Padrão A4)
+      const documentoDefinicao: any = {
+        content: htmlConvertido,
+        pageSize: 'A4',
+        pageMargins: [40, 40, 40, 40], // Margens limpas de 15mm nas bordas do papel
+        styles: {
+          // Mapeamento de estilos para garantir que preserve a formatação básica
+          'cv-header': {
+            alignment: 'center',
+            marginBottom: 10
+          },
+          'cv-contatos': {
+            fontSize: 10,
+            alignment: 'center',
+            marginBottom: 20
+          },
+          h3: {
+            fontSize: 14,
+            bold: true,
+            marginTop: 15,
+            marginBottom: 5,
+            color: '#111111'
+          },
+          p: {
+            fontSize: 10.5,
+            lineHeight: 1.3,
+            marginBottom: 8
+          },
+          li: {
+            fontSize: 10,
+            marginBottom: 4
+          }
+        },
+        defaultStyle: {
+          // Fonte padrão aceita universalmente pelos sistemas ATS
+          font: 'Helvetica',
+          fontSize: 10,
+          color: '#222222'
         }
-        setIsExporting(false);
-      }, 5000);
+      };
+
+      // Nome do arquivo baseado no nome do candidato
+      const nomeLimpo = cvParaExportar.dadosPessoais?.nome
+        ? cvParaExportar.dadosPessoais.nome.trim().replace(/\s+/g, '_')
+        : 'Curriculo';
+
+      // 5. Gera o PDF e faz o download direto (Sem abrir tela de impressão e com texto real!)
+      pdfMakeAny.createPdf(documentoDefinicao).download(`Curriculo_${nomeLimpo}.pdf`);
 
     } catch (error) {
-      console.error(error);
-      alert("Ocorreu um erro ao preparar a impressão.");
+      console.error("Erro ao processar PDF nativo:", error);
+      alert("Ocorreu um erro ao estruturar o PDF com texto real.");
+    } finally {
       setIsExporting(false);
     }
   };
