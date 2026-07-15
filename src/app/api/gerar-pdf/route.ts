@@ -24,15 +24,25 @@ export async function POST(req: Request) {
       args: isLocal 
         ? ['--no-sandbox', '--disable-setuid-sandbox'] 
         : [...chromium.args, '--no-sandbox', '--disable-setuid-sandbox'],
-      defaultViewport: chromium.defaultViewport,
+      defaultViewport: {
+        width: 794,
+        height: 1123,
+        deviceScaleFactor: 1,
+      },
       executablePath: isLocal ? LOCAL_CHROME_EXECUTABLE : await chromium.executablePath(),
       headless: true,
     });
 
     const page = await browser.newPage();
     
-    // Carrega o HTML que o frontend enviou
-    await page.setContent(html, { waitUntil: 'networkidle0' });
+    // CORREÇÃO: Usando domcontentloaded para agradar o TypeScript
+    await page.setContent(html, { waitUntil: 'domcontentloaded' });
+    
+    // TRUQUE DE MESTRE: Aguarda explicitamente todas as fontes carregarem
+    await page.evaluate(async () => {
+      await document.fonts.ready;
+    });
+
     await page.emulateMediaType('print');
     
     // Gera o PDF com texto real
