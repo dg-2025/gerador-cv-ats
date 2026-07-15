@@ -3,8 +3,6 @@
 import React, { useState } from 'react';
 import { Bot, Download, Loader2 } from 'lucide-react';
 import { CurriculoData } from '@/types/cv';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 import styles from "./style.module.css";
 
 interface AcoesGeradorProps {
@@ -28,97 +26,103 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
 
   const handleExportPDF = async () => {
     if (!cvParaExportar) return;
-    
     setIsExporting(true);
 
     try {
-      // 1. Aguarda as fontes carregarem perfeitamente
-      if (document.fonts) {
-        await document.fonts.ready;
-      }
-
-      const cvDocumento = document.querySelector('.cv-documento') as HTMLElement;
+      const cvDocumento = document.querySelector('.cv-documento');
       if (!cvDocumento) {
         alert("Componente do currículo não encontrado.");
         setIsExporting(false);
         return;
       }
 
-      // 2. Cria um container temporário e invisível forçado no tamanho A4
-      const printContainer = document.createElement('div');
-      printContainer.style.position = 'fixed';
-      printContainer.style.left = '-9999px';
-      printContainer.style.top = '0';
-      printContainer.style.width = '794px'; // Largura exata A4 em px (96dpi)
-      printContainer.style.backgroundColor = '#ffffff';
-      printContainer.className = `template-${template}`;
-
-      // 3. Clona o currículo para dentro desse container
-      const clone = cvDocumento.cloneNode(true) as HTMLElement;
+      // 1. Captura os estilos da página (Fontes e CSS) para enviar ao servidor
+      let estilosCSS = '';
+      const documentHead = document.head;
       
-      // Remove atributos editáveis para não interferir na captura
-      clone.querySelectorAll('[contenteditable]').forEach(el => {
+      const links = Array.from(documentHead.querySelectorAll('link[rel="stylesheet"]'))
+        .map(link => link.outerHTML).join('\n');
+        
+      const stylesTags = Array.from(documentHead.querySelectorAll('style'))
+        .map(style => style.outerHTML).join('\n');
+
+      Array.from(document.styleSheets).forEach((sheet) => {
+        try {
+          if (sheet.cssRules) {
+            Array.from(sheet.cssRules).forEach((rule) => {
+              estilosCSS += rule.cssText + '\n';
+            });
+          }
+        } catch (e) { /* Ignora erros de CORS */ }
+      });
+
+      // 2. Clona o CV e limpa os atributos de edição
+      const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
+      cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
       });
 
-      // Força estilos no clone para garantir o layout A4 perfeito
-      clone.style.width = '100%';
-      clone.style.minHeight = '1123px';
-      clone.style.margin = '0';
-      clone.style.padding = '40px'; // Margem interna do PDF
-      clone.style.boxShadow = 'none';
-      clone.style.transform = 'none';
+      // 3. Monta o HTML completo
+      const fullHtml = `
+        <!DOCTYPE html>
+        <html lang="pt-BR">
+          <head>
+            <meta charset="UTF-8">
+            ${links}
+            ${stylesTags}
+            <style>
+              ${estilosCSS}
+              html, body {
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #ffffff !important;
+                -webkit-print-color-adjust: exact !important;
+                print-color-adjust: exact !important;
+              }
+              .cv-documento {
+                width: 210mm !important;
+                min-height: 297mm !important;
+                padding: 20mm !important;
+                margin: 0 auto !important;
+                box-sizing: border-box !important;
+              }
+            </style>
+          </head>
+          <body class="template-${template}">
+            ${cloneDocumento.outerHTML}
+          </body>
+        </html>
+      `;
 
-      printContainer.appendChild(clone);
-      document.body.appendChild(printContainer);
-
-      // 4. Tira um "print" de alta resolução do elemento clonado
-      const canvas = await html2canvas(clone, {
-        scale: 2, // Aumenta a qualidade/resolução
-        useCORS: true, // Permite carregar fontes e imagens externas
-        backgroundColor: '#ffffff',
-        logging: false
-      });
-
-      // 5. Remove o container temporário
-      document.body.removeChild(printContainer);
-
-      // 6. Converte o canvas para PDF e baixa
-      const imgData = canvas.toDataURL('image/png');
-      const pdf = new jsPDF({
-        orientation: 'portrait',
-        unit: 'mm',
-        format: 'a4'
-      });
-
-      const pdfWidth = pdf.internal.pageSize.getWidth(); // 210mm
-      const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-      // Adiciona a imagem. Se o currículo tiver mais de uma página (for mais longo), ele quebra a página
-      let heightLeft = pdfHeight;
-      let position = 0;
-      const pageHeight = 297; // 297mm (Altura do A4)
-
-      pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-      heightLeft -= pageHeight;
-
-      while (heightLeft >= 0) {
-        position = heightLeft - pdfHeight;
-        pdf.addPage();
-        pdf.addImage(imgData, 'PNG', 0, position, pdfWidth, pdfHeight);
-        heightLeft -= pageHeight;
-      }
-
-      // 7. Salva o arquivo diretamente no dispositivo
+      // 4. Envia o HTML para a API converter em PDF com texto real
       const nomeArquivo = cvParaExportar.dadosPessoais?.nome 
         ? `Curriculo_${cvParaExportar.dadosPessoais.nome.replace(/\s+/g, '_')}.pdf` 
         : 'Curriculo_ATS.pdf';
-        
-      pdf.save(nomeArquivo);
+
+      const response = await fetch('/api/gerar-pdf', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ html: fullHtml, filename: nomeArquivo }),
+      });
+
+      if (!response.ok) throw new Error("Erro na geração do PDF");
+
+      // 5. Baixa o arquivo diretamente no navegador do usuário
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = nomeArquivo;
+      document.body.appendChild(link);
+      link.click();
+      
+      // Limpeza
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(url);
 
     } catch (error) {
       console.error("Erro ao gerar PDF:", error);
-      alert("Ocorreu um erro ao gerar o PDF. Tente novamente.");
+      alert("Erro ao exportar PDF. Verifique sua conexão.");
     } finally {
       setIsExporting(false);
     }
