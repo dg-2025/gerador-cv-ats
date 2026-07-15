@@ -24,7 +24,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
 }) => {
   const [isExporting, setIsExporting] = useState(false);
 
-  const handleExportPDF = async () => {
+  const handleExportPDF = () => {
     if (!cvParaExportar) return;
     setIsExporting(true);
 
@@ -36,7 +36,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
         return;
       }
 
-      // 1. Captura os estilos da página (Fontes e CSS) para enviar ao servidor
+      // 1. Captura os estilos e fontes da página atual
       let estilosCSS = '';
       const documentHead = document.head;
       
@@ -53,77 +53,101 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
               estilosCSS += rule.cssText + '\n';
             });
           }
-        } catch (e) { /* Ignora erros de CORS */ }
+        } catch (e) { /* Ignora erros de CORS de fontes externas */ }
       });
 
-      // 2. Clona o CV e limpa os atributos de edição
+      // 2. Clona o currículo e remove os atributos de edição
       const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
       cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
       });
 
-      // 3. Monta o HTML completo
-      const fullHtml = `
+      // 3. Cria um iframe invisível para processar a impressão isolada
+      const iframe = document.createElement('iframe');
+      iframe.style.position = 'fixed';
+      iframe.style.right = '-9999px';
+      iframe.style.bottom = '-9999px';
+      iframe.style.width = '0';
+      iframe.style.height = '0';
+      iframe.style.border = '0';
+      document.body.appendChild(iframe);
+
+      const doc = iframe.contentWindow?.document || iframe.contentDocument;
+      if (!doc) throw new Error("Não foi possível criar o ambiente de impressão.");
+
+      // 4. Injeta o HTML forçando as proporções do A4 (A MÁGICA PARA O MOBILE AQUI)
+      doc.open();
+      doc.write(`
         <!DOCTYPE html>
         <html lang="pt-BR">
           <head>
             <meta charset="UTF-8">
+            <!-- Força o celular a renderizar na largura do A4 (aprox 794px) -->
+            <meta name="viewport" content="width=794, initial-scale=1.0, maximum-scale=1.0">
+            <title>Curriculo_${cvParaExportar.dadosPessoais?.nome?.replace(/\s+/g, '_') || 'ATS'}</title>
             ${links}
             ${stylesTags}
             <style>
               ${estilosCSS}
+              
+              /* Regras rígidas para forçar o tamanho do papel, independente da tela */
+              @page {
+                size: A4 portrait;
+                margin: 0 !important;
+              }
+              
               html, body {
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #ffffff !important;
+                /* As medidas abaixo impedem que o texto esprema no celular */
+                width: 210mm !important;
+                min-height: 297mm !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
               }
+
               .cv-documento {
                 width: 210mm !important;
                 min-height: 297mm !important;
-                padding: 20mm !important;
+                padding: 15mm !important;
                 margin: 0 auto !important;
                 box-sizing: border-box !important;
+                background: #ffffff !important;
+                box-shadow: none !important;
+                transform: none !important;
               }
             </style>
           </head>
           <body class="template-${template}">
             ${cloneDocumento.outerHTML}
+            <script>
+              // Aguarda as fontes carregarem e chama a impressão nativa
+              window.onload = () => {
+                setTimeout(() => {
+                  window.print();
+                }, 500); // Meio segundo para o navegador estabilizar o CSS
+              };
+            </script>
           </body>
         </html>
-      `;
+      `);
+      doc.close();
 
-      // 4. Envia o HTML para a API converter em PDF com texto real
-      const nomeArquivo = cvParaExportar.dadosPessoais?.nome 
-        ? `Curriculo_${cvParaExportar.dadosPessoais.nome.replace(/\s+/g, '_')}.pdf` 
-        : 'Curriculo_ATS.pdf';
+      // 5. Foca no iframe para a tela de impressão abrir corretamente no iOS/Android
+      iframe.contentWindow?.focus();
 
-      const response = await fetch('/api/gerar-pdf', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ html: fullHtml, filename: nomeArquivo }),
-      });
-
-      if (!response.ok) throw new Error("Erro na geração do PDF");
-
-      // 5. Baixa o arquivo diretamente no navegador do usuário
-      const blob = await response.blob();
-      const url = window.URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = nomeArquivo;
-      document.body.appendChild(link);
-      link.click();
-      
-      // Limpeza
-      document.body.removeChild(link);
-      window.URL.revokeObjectURL(url);
+      // 6. Limpa o iframe após um tempo (para não poluir a memória)
+      setTimeout(() => {
+        if (document.body.contains(iframe)) {
+          document.body.removeChild(iframe);
+        }
+        setIsExporting(false);
+      }, 5000);
 
     } catch (error) {
-      console.error("Erro ao gerar PDF:", error);
-      alert("Erro ao exportar PDF. Verifique sua conexão.");
-    } finally {
+      console.error(error);
+      alert("Ocorreu um erro ao preparar a impressão.");
       setIsExporting(false);
     }
   };
@@ -141,9 +165,9 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
       {hasCv && (
         <button onClick={handleExportPDF} disabled={isExporting} className={styles["btn-baixar"]}>
           {isExporting ? (
-            <><Loader2 size={20} className="animate-spin" /> Gerando PDF...</>
+            <><Loader2 size={20} className="animate-spin" /> Preparando...</>
           ) : (
-            <><Download size={20} /> Baixar PDF</>
+            <><Download size={20} /> Salvar PDF</>
           )}
         </button>
       )}
