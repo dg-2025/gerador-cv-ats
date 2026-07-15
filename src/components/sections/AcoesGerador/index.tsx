@@ -10,7 +10,7 @@ import pdfMake from "pdfmake/build/pdfmake";
 import pdfFonts from "pdfmake/build/vfs_fonts";
 import htmlToPdfmake from "html-to-pdfmake";
 
-// Inicializa os fontes do pdfMake para o ambiente do navegador
+// Força o cast para 'any' para contornar limitações de tipagem estrita do pacote @types/pdfmake
 const pdfMakeAny = pdfMake as any;
 
 if (pdfMakeAny) {
@@ -43,7 +43,7 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
     setIsExporting(true);
 
     try {
-      // 1. Busca cirurgicamente apenas o elemento do currículo
+      // 1. Busca cirurgicamente apenas o elemento do currículo na tela
       const cvDocumento = document.querySelector('.cv-documento');
       if (!cvDocumento) {
         alert("Componente do currículo não encontrado.");
@@ -51,66 +51,76 @@ const AcoesGerador: React.FC<AcoesGeradorProps> = ({
         return;
       }
 
-      // 2. Remove temporariamente o atributo contenteditable para evitar sujeira no texto do PDF
+      // 2. Clona o elemento e remove o atributo "contenteditable" para evitar sujeira visual no PDF
       const cloneDocumento = cvDocumento.cloneNode(true) as HTMLElement;
       cloneDocumento.querySelectorAll('[contenteditable]').forEach(el => {
         el.removeAttribute('contenteditable');
       });
 
-      // 3. Converte o HTML real em estrutura de dados nativa do PDF (Vetor de texto)
-      // Passamos o window para o html-to-pdfmake interpretar corretamente no cliente
+      // 3. Converte o HTML real clonado em uma árvore de dados compatível com o pdfMake
       const htmlConvertido = htmlToPdfmake(cloneDocumento.innerHTML, {
         window: window,
         tableAutoSize: true
       });
 
-      // 4. Define as configurações de página e tipografia do PDF (Padrão A4)
+      // 4. Define as configurações de página, margens e o mapeamento estrito das fontes nativas
       const documentoDefinicao: any = {
         content: htmlConvertido,
         pageSize: 'A4',
-        pageMargins: [40, 40, 40, 40], // Margens limpas de 15mm nas bordas do papel
+        pageMargins: [40, 45, 40, 45], // Margens equilibradas para manter o padrão A4 limpo
+
+        // Mapeamento obrigatório para que os pesos de fontes funcionem perfeitamente (bold, italics, etc)
+        fonts: {
+          Helvetica: {
+            normal: 'Helvetica',
+            bold: 'Helvetica-Bold',
+            italics: 'Helvetica-Oblique',
+            bolditalic: 'Helvetica-BoldOblique'
+          }
+        },
+
         styles: {
-          // Mapeamento de estilos para garantir que preserve a formatação básica
+          // Garante que as classes de posicionamento e tamanhos mantenham a fidelidade
           'cv-header': {
             alignment: 'center',
-            marginBottom: 10
+            marginBottom: 12
           },
           'cv-contatos': {
             fontSize: 10,
             alignment: 'center',
-            marginBottom: 20
+            marginBottom: 22
           },
           h3: {
-            fontSize: 14,
+            fontSize: 13,
             bold: true,
-            marginTop: 15,
-            marginBottom: 5,
+            marginTop: 14,
+            marginBottom: 6,
             color: '#111111'
           },
           p: {
-            fontSize: 10.5,
+            fontSize: 10,
             lineHeight: 1.3,
-            marginBottom: 8
+            marginBottom: 6
           },
           li: {
-            fontSize: 10,
+            fontSize: 9.5,
             marginBottom: 4
           }
         },
         defaultStyle: {
-          // Fonte padrão aceita universalmente pelos sistemas ATS
+          // Fonte Helvetica é a mais recomendada e suportada nativamente por leitores ATS
           font: 'Helvetica',
           fontSize: 10,
           color: '#222222'
         }
       };
 
-      // Nome do arquivo baseado no nome do candidato
+      // Limpa espaços no nome do arquivo para o download direto
       const nomeLimpo = cvParaExportar.dadosPessoais?.nome
         ? cvParaExportar.dadosPessoais.nome.trim().replace(/\s+/g, '_')
         : 'Curriculo';
 
-      // 5. Gera o PDF e faz o download direto (Sem abrir tela de impressão e com texto real!)
+      // 5. Gera o PDF vetorial e dispara o download silencioso direto no navegador mobile
       pdfMakeAny.createPdf(documentoDefinicao).download(`Curriculo_${nomeLimpo}.pdf`);
 
     } catch (error) {
